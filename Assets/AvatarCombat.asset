@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6187c4925faf4e4b83cc0fe9e010841, type: 3}
+  m_Name: AvatarCombat
+  m_EditorClassIdentifier: Assembly-CSharp::AvatarCombatData
+  tempoJanelaCombo: 1
+  danoAtk1: 10
+  avancoAtk1: 9
+  danoAtk2: 15
+  avancoAtk2: 9
+  danoAtk3: 20
+  avancoAtk3: 13
+  danoAtk4: 30
+  avancoAtk4: 18
+  tempoAnimAtk1: 0.5
+  tempoAnimAtk2: 0.6
+  tempoAnimAtk3: 0.5
+  tempoAnimAtk4: 1
+  raioDoArco: 3.39
+  hitboxOffset: {x: -1.94, y: 3.49, z: 5.43}
+  layerInimigos:
+    serializedVersion: 2
+    m_Bits: 0
