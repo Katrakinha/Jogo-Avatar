@@ -23,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isMountingAirScooter = false; 
     public int soprosUsados = 0;
     public bool didSopro = false; 
+    public bool isAiming = false; // NOVA VARIÁVEL: Diz ao script que estamos a mirar!
 
     [Header("Controles (Novo Input System)")]
     public InputActionReference controleMover;
@@ -75,54 +76,51 @@ public class PlayerMovement : MonoBehaviour
         camRight.y = 0f;
 
         moveInput = (camForward.normalized * moveZ + camRight.normalized * moveX).normalized;
-        currentSpeed = moveInput.magnitude * data.moveSpeed;
+        
+        // CALCULA A VELOCIDADE VISUAL DO ANIMATOR (Mais devagar se estiver a mirar)
+        float targetSpeedCalc = isAiming ? (data.moveSpeed * 0.4f) : data.moveSpeed;
+        currentSpeed = moveInput.magnitude * targetSpeedCalc;
 
         CheckGrounded();
 
-        if (controleCancelarPlanador.action.WasPressedThisFrame() && !isGliding)
+        // Bloqueia pulo e patinete se estiver a mirar
+        if (!isAiming)
         {
-            if (isAirScooter || isMountingAirScooter)
+            if (controleCancelarPlanador.action.WasPressedThisFrame() && !isGliding)
             {
-                DesmontarAirScooterComPulinho();
-            }
-            else if (isGrounded)
-            {
-                AtivarAirScooter();
-            }
-        }
-
-        if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
-        {
-            soprosUsados++;
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * data.boostSoproForce, ForceMode.Impulse);
-            
-            didSopro = true; 
-            efeitoInclinacaoSopro = -50f; 
-        }
-
-        if (controlePular.action.WasPressedThisFrame())
-        {
-            if (isGrounded)
-            {
-                PararPlanar();
                 if (isAirScooter || isMountingAirScooter)
+                    DesmontarAirScooterComPulinho();
+                else if (isGrounded)
+                    AtivarAirScooter();
+            }
+
+            if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
+            {
+                soprosUsados++;
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+                rb.AddForce(Vector3.up * data.boostSoproForce, ForceMode.Impulse);
+                
+                didSopro = true; 
+                efeitoInclinacaoSopro = -50f; 
+            }
+
+            if (controlePular.action.WasPressedThisFrame())
+            {
+                if (isGrounded)
                 {
-                    DesativarAirScooterSilencioso();
+                    PararPlanar();
+                    if (isAirScooter || isMountingAirScooter)
+                        DesativarAirScooterSilencioso();
+                    rb.AddForce(Vector3.up * data.jumpForce, ForceMode.Impulse);
                 }
-                rb.AddForce(Vector3.up * data.jumpForce, ForceMode.Impulse);
-            }
-            else if (isAirScooter)
-            {
-                ExecutarPuloDuploComEfeito();
-            }
-            else if (canDoubleJump)
-            {
-                ExecutarPuloDuploComEfeito();
-            }
-            else if (!isGliding)
-            {
-                AtivarPlanador();
+                else if (isAirScooter || canDoubleJump)
+                {
+                    ExecutarPuloDuploComEfeito();
+                }
+                else if (!isGliding)
+                {
+                    AtivarPlanador();
+                }
             }
         }
     }
@@ -176,7 +174,7 @@ public class PlayerMovement : MonoBehaviour
             mountTimer -= Time.fixedDeltaTime;
 
             Vector3 targetVelocity = moveInput * data.moveSpeed;
-            targetVelocity.y = rb.linearVelocity.y; // Mantém o pulo
+            targetVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = targetVelocity;
 
             if (mountTimer <= 0f)
@@ -199,7 +197,6 @@ public class PlayerMovement : MonoBehaviour
                 scooterDirection = turnOffset * scooterDirection;
             }
 
-            // A TRAVA DE SOLO ESTÁ AQUI: Só acelera se a bola encostar no chão!
             if (isGrounded) 
             {
                 float currentScooterSpeed = data.airScooterSpeed + (inputVertical * 4f);
@@ -211,7 +208,6 @@ public class PlayerMovement : MonoBehaviour
             }
             else 
             {
-                // Se ainda está a cair do pulinho, aplica apenas a gravidade (sem ir para a frente)
                 Vector3 fallVel = rb.linearVelocity;
                 fallVel.x = 0f; 
                 fallVel.z = 0f;
@@ -228,7 +224,9 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Vector3 targetVelocity = moveInput * data.moveSpeed;
+            // O MOVER NORMAL DO CHÃO: Corta a velocidade real pela metade se mirar
+            float velocidadeAtual = isAiming ? (data.moveSpeed * 0.4f) : data.moveSpeed;
+            Vector3 targetVelocity = moveInput * velocidadeAtual;
             targetVelocity.y = rb.linearVelocity.y;
 
             if (!isGrounded)
@@ -238,19 +236,23 @@ public class PlayerMovement : MonoBehaviour
 
             rb.linearVelocity = targetVelocity;
 
-            if (moveInput != Vector3.zero)
+            // BLOQUEIA A ROTAÇÃO DE MOVIMENTO SE MIRAR (O PlayerFireBending já vai rodá-lo)
+            if (!isAiming) 
             {
-                Quaternion targetRotation = Quaternion.LookRotation(moveInput);
-                rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 10f * Time.fixedDeltaTime));
-            }
-            else
-            {
-                Vector3 currentFwd = transform.forward;
-                currentFwd.y = 0f; 
-                if (currentFwd != Vector3.zero)
+                if (moveInput != Vector3.zero)
                 {
-                    Quaternion uprightRotation = Quaternion.LookRotation(currentFwd);
-                    rb.MoveRotation(Quaternion.Slerp(rb.rotation, uprightRotation, 10f * Time.fixedDeltaTime));
+                    Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+                    rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 10f * Time.fixedDeltaTime));
+                }
+                else
+                {
+                    Vector3 currentFwd = transform.forward;
+                    currentFwd.y = 0f; 
+                    if (currentFwd != Vector3.zero)
+                    {
+                        Quaternion uprightRotation = Quaternion.LookRotation(currentFwd);
+                        rb.MoveRotation(Quaternion.Slerp(rb.rotation, uprightRotation, 10f * Time.fixedDeltaTime));
+                    }
                 }
             }
         }
@@ -260,8 +262,6 @@ public class PlayerMovement : MonoBehaviour
     {
         isMountingAirScooter = true;
         didMountAirScooter = true; 
-        
-        // Pode ajustar o tempo aqui de volta para 0.35f se achar que a bola surge rápido demais
         mountTimer = 0.15f; 
 
         Vector3 fwd = transform.forward;
@@ -278,7 +278,6 @@ public class PlayerMovement : MonoBehaviour
         isMountingAirScooter = false;
         if (objetoAirScooter != null) objetoAirScooter.SetActive(false);
 
-        // ENDIREITA A CÁPSULA: Evita o bug de arrastar no chão
         transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
 
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
@@ -291,7 +290,6 @@ public class PlayerMovement : MonoBehaviour
         isMountingAirScooter = false;
         if (objetoAirScooter != null) objetoAirScooter.SetActive(false);
         
-        // ENDIREITA A CÁPSULA
         transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
     }
 
@@ -320,7 +318,6 @@ public class PlayerMovement : MonoBehaviour
             isGliding = false;
             if (objetoPlanador != null) objetoPlanador.SetActive(false);
             
-            // ENDIREITA A CÁPSULA
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         }
     }
