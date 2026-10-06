@@ -4,10 +4,11 @@ public class ProjetilFogo : MonoBehaviour
 {
     [Header("Configurações")]
     public float tempoDeVida = 4f; 
-    public int dano = 10;
+    public float dano = 10f; // Transformado em float para compatibilidade
+    public float forcaKnockback = 4f; // <-- ADICIONADO: Empurrão do impacto da chama
     
     [Header("Efeitos Visuais")]
-    public GameObject prefabExplosao; // Arrasta o teu efeito de explosão para aqui
+    public GameObject prefabExplosao; 
 
     void Start()
     {
@@ -18,13 +19,17 @@ public class ProjetilFogo : MonoBehaviour
     {
         if (outro.CompareTag("Player")) return;
 
-        Alvo alvoAtingido = outro.GetComponent<Alvo>();
+        // --- A BOLA DE FOGO TIRA VIDA AQUI ---
+        UniversalEnemy alvoAtingido = outro.GetComponent<UniversalEnemy>();
         if (alvoAtingido != null)
         {
-            alvoAtingido.ReceberDano(dano);
+            // Busca o Aang pela Tag "Player" para o inimigo saber de onde veio o tiro
+            Transform playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+            
+            // Passa os 3 valores: Dano, Knockback e o Transform do Aang
+            alvoAtingido.ReceberDano(dano, forcaKnockback, playerTransform);
         }
 
-        // Toca a explosão exatamente no ponto onde a bola bateu
         if (prefabExplosao != null)
         {
             Instantiate(prefabExplosao, transform.position, Quaternion.identity);

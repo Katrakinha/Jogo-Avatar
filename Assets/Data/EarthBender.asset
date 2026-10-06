@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9554ea947d8c924fa73359bdff36cf3, type: 3}
+  m_Name: EarthBender
+  m_EditorClassIdentifier: Assembly-CSharp::AvatarEarthData
+  rockPrefab: {fileID: 2586713759252572031, guid: 87123ac33e4f0f04bacc28c3d2dcb0f6, type: 3}
+  qtdRochasAnel1: 6
+  raioAnel1: 7
+  atrasoAnel1: 0
+  qtdRochasAnel2: 12
+  raioAnel2: 14
+  atrasoAnel2: 0.15
+  qtdRochasAnel3: 18
+  raioAnel3: 21
+  atrasoAnel3: 0.25
+  escalaBase: {x: 5, y: 5, z: 5}
+  variacaoEscalaMin: 0.8
+  variacaoEscalaMax: 1.4
+  profundidadeEscondida: 3.5
+  velocidadeSubida: 35
+  tempoNoTopo: 1.2
+  velocidadeDescida: 25

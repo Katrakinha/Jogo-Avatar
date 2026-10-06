@@ -15,15 +15,18 @@ public class PlayerMovement : MonoBehaviour
     [Header("Estado em Tempo de Execução (Mutáveis)")]
     public float currentSpeed;
     public bool isGrounded;
-    public bool canDoubleJump;
-    public bool didDoubleJump;
+    public int pulosRealizados = 0; 
+    public bool didDoubleJump = false; 
     public bool didMountAirScooter = false; 
     public bool isGliding = false;
     public bool isAirScooter = false; 
     public bool isMountingAirScooter = false; 
     public int soprosUsados = 0;
     public bool didSopro = false; 
-    public bool isAiming = false; // NOVA VARIÁVEL: Diz ao script que estamos a mirar!
+    
+    // VARIÁVEIS DE COMBATE E MIRA
+    public bool isAiming = false; 
+    public bool isEarthSlamming = false; 
 
     [Header("Controles (Novo Input System)")]
     public InputActionReference controleMover;
@@ -37,6 +40,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 scooterDirection; 
     private float mountTimer = 0f;
     private float efeitoInclinacaoSopro = 0f; 
+
+    private float tempoCegoPulo = 0f;
 
     void Start()
     {
@@ -63,8 +68,10 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        didDoubleJump = false;
+        if (tempoCegoPulo > 0) tempoCegoPulo -= Time.deltaTime;
+
         didMountAirScooter = false; 
+        didDoubleJump = false; 
 
         Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
         float moveX = inputDir.x;
@@ -77,21 +84,28 @@ public class PlayerMovement : MonoBehaviour
 
         moveInput = (camForward.normalized * moveZ + camRight.normalized * moveX).normalized;
         
-        // CALCULA A VELOCIDADE VISUAL DO ANIMATOR (Mais devagar se estiver a mirar)
         float targetSpeedCalc = isAiming ? (data.moveSpeed * 0.4f) : data.moveSpeed;
         currentSpeed = moveInput.magnitude * targetSpeedCalc;
 
         CheckGrounded();
 
-        // Bloqueia pulo e patinete se estiver a mirar
-        if (!isAiming)
+        if (!isAiming && !isEarthSlamming)
         {
-            if (controleCancelarPlanador.action.WasPressedThisFrame() && !isGliding)
+            // CORREÇÃO: O Botão "Bolinha" agora sabe exatamente o que cancelar!
+            if (controleCancelarPlanador.action.WasPressedThisFrame())
             {
-                if (isAirScooter || isMountingAirScooter)
+                if (isGliding)
+                {
+                    PararPlanar();
+                }
+                else if (isAirScooter || isMountingAirScooter)
+                {
                     DesmontarAirScooterComPulinho();
+                }
                 else if (isGrounded)
+                {
                     AtivarAirScooter();
+                }
             }
 
             if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
@@ -106,18 +120,24 @@ public class PlayerMovement : MonoBehaviour
 
             if (controlePular.action.WasPressedThisFrame())
             {
-                if (isGrounded)
+                if (pulosRealizados == 0 && isGrounded) 
                 {
+                    pulosRealizados = 1;
+                    tempoCegoPulo = 0.15f; 
+                    
                     PararPlanar();
                     if (isAirScooter || isMountingAirScooter)
                         DesativarAirScooterSilencioso();
+                        
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); 
                     rb.AddForce(Vector3.up * data.jumpForce, ForceMode.Impulse);
                 }
-                else if (isAirScooter || canDoubleJump)
+                else if (pulosRealizados == 1 || isAirScooter) 
                 {
+                    pulosRealizados = 2; 
                     ExecutarPuloDuploComEfeito();
                 }
-                else if (!isGliding)
+                else if (pulosRealizados >= 2 && !isGliding) 
                 {
                     AtivarPlanador();
                 }
@@ -132,12 +152,14 @@ public class PlayerMovement : MonoBehaviour
 
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         rb.AddForce(Vector3.up * data.doubleJumpForce, ForceMode.Impulse);
-        canDoubleJump = false;
+        
         didDoubleJump = true; 
     }
 
     void FixedUpdate()
     {
+        if (isEarthSlamming) return; 
+
         if (isGliding)
         {
             Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
@@ -216,6 +238,8 @@ public class PlayerMovement : MonoBehaviour
             }
 
             Quaternion baseRotation = Quaternion.LookRotation(scooterDirection);
+            
+            // CORREÇÃO: Inclinação total restaurada para todas as direções!
             float pitchAngle = inputVertical * 20f;                  
             float rollAngle = -inputHorizontal * (data.maxBankAngle * 0.8f); 
             
@@ -224,7 +248,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // O MOVER NORMAL DO CHÃO: Corta a velocidade real pela metade se mirar
             float velocidadeAtual = isAiming ? (data.moveSpeed * 0.4f) : data.moveSpeed;
             Vector3 targetVelocity = moveInput * velocidadeAtual;
             targetVelocity.y = rb.linearVelocity.y;
@@ -236,7 +259,6 @@ public class PlayerMovement : MonoBehaviour
 
             rb.linearVelocity = targetVelocity;
 
-            // BLOQUEIA A ROTAÇÃO DE MOVIMENTO SE MIRAR (O PlayerFireBending já vai rodá-lo)
             if (!isAiming) 
             {
                 if (moveInput != Vector3.zero)
@@ -324,14 +346,28 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckGrounded()
     {
-        if (data != null)
+        if (tempoCegoPulo > 0)
+        {
+            isGrounded = false;
+            return;
+        }
+
+        if (data != null && groundCheck != null)
         {
             Vector3 boxSize = new Vector3(data.boxWidth, data.boxHeight, data.boxLength);
-            isGrounded = Physics.CheckBox(groundCheck.position, boxSize / 2f, Quaternion.identity, groundLayer);
+            Vector3 boxCenter = groundCheck.position + groundCheck.TransformDirection(data.boxOffset);
+            
+            isGrounded = Physics.CheckBox(boxCenter, boxSize / 2f, groundCheck.rotation, groundLayer);
+            
+            // CORREÇÃO: O Laser agora protege tanto o Patinete quanto o Planador para aterrares sempre em segurança!
+            if (!isGrounded && (isAirScooter || isGliding))
+            {
+                isGrounded = Physics.Raycast(boxCenter, Vector3.down, 10f, groundLayer);
+            }
             
             if (isGrounded)
             {
-                canDoubleJump = true;
+                pulosRealizados = 0; 
                 PararPlanar();
             }
         }
@@ -341,9 +377,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (groundCheck != null && data != null)
         {
-            Gizmos.color = Color.red;
             Vector3 boxSize = new Vector3(data.boxWidth, data.boxHeight, data.boxLength);
-            Gizmos.DrawWireCube(groundCheck.position, boxSize);
+            Vector3 boxCenter = groundCheck.position + groundCheck.TransformDirection(data.boxOffset);
+            
+            Gizmos.color = Color.red;
+            Gizmos.matrix = Matrix4x4.TRS(boxCenter, groundCheck.rotation, Vector3.one);
+            Gizmos.DrawWireCube(Vector3.zero, boxSize);
+
+            Gizmos.matrix = Matrix4x4.identity; 
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(boxCenter, boxCenter + Vector3.down * 1.2f);
         }
     }
 }

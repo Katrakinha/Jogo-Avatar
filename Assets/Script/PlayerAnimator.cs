@@ -18,7 +18,7 @@ public class PlayerAnimator : MonoBehaviour
     [Header("Ajustes do Ataque 1")]
     public Vector3 posicaoAtk1;
     public Vector3 rotacaoAtk1;
-    public Vector3 escalaAtk1 = Vector3.one; // Adicionado: Controlo de Tamanho/Espelho
+    public Vector3 escalaAtk1 = Vector3.one; 
 
     [Header("Ajustes do Ataque 2")]
     public Vector3 posicaoAtk2;
@@ -67,53 +67,43 @@ public class PlayerAnimator : MonoBehaviour
             }
             movementSimulation.didSopro = false; 
         }
+    }
 
-        // --- ANIMAÇÕES DE COMBATE ---
-        if (combatSimulation != null && combatSimulation.didAttack)
+    // --- NOVA FUNÇÃO PÚBLICA PARA O COMBATE ---
+    // Esta função será chamada diretamente pelo PlayerCombat
+    public void DispararAnimacaoDeAtaque(int passoDoCombo)
+    {
+        if (passoDoCombo == 1) 
         {
-            combatSimulation.didAttack = false;
-
-            if (combatSimulation.comboStep == 1) 
-            {
-                anim.SetTrigger("Atk1");
-                TocarVFX(vfxCorteNormal, posicaoAtk1, rotacaoAtk1, escalaAtk1);
-            }
-            else if (combatSimulation.comboStep == 2) 
-            {
-                anim.SetTrigger("Atk2");
-                TocarVFX(vfxCorteNormal, posicaoAtk2, rotacaoAtk2, escalaAtk2);
-            }
-            else if (combatSimulation.comboStep == 3) 
-            {
-                anim.SetTrigger("Atk3");
-                TocarVFX(vfxCorteCircular, posicaoAtk3, rotacaoAtk3, escalaAtk3);
-            }
-            else if (combatSimulation.comboStep == 4) 
-            {
-                anim.SetTrigger("Atk4");
-                TocarVFX(vfxCorteCircular, posicaoAtk4, rotacaoAtk4, escalaAtk4);
-            }
+            anim.SetTrigger("Atk1");
+            TocarVFX(vfxCorteNormal, posicaoAtk1, rotacaoAtk1, escalaAtk1);
+        }
+        else if (passoDoCombo == 2) 
+        {
+            anim.SetTrigger("Atk2");
+            TocarVFX(vfxCorteNormal, posicaoAtk2, rotacaoAtk2, escalaAtk2);
+        }
+        else if (passoDoCombo == 3) 
+        {
+            anim.SetTrigger("Atk3");
+            TocarVFX(vfxCorteCircular, posicaoAtk3, rotacaoAtk3, escalaAtk3);
+        }
+        else if (passoDoCombo == 4) 
+        {
+            anim.SetTrigger("Atk4");
+            TocarVFX(vfxCorteCircular, posicaoAtk4, rotacaoAtk4, escalaAtk4);
         }
     }
 
-    // A MÁGICA: Agora também aplica a Escala!
-    // A MÁGICA ATUALIZADA: Força a limpeza e o reinício da partícula!
     private void TocarVFX(ParticleSystem vfx, Vector3 pos, Vector3 rot, Vector3 escala)
     {
         if (vfx != null)
         {
-            // 1. Pára o efeito imediatamente e limpa qualquer rastro da tela
             vfx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); 
-            
-            // 2. Reposiciona, gira e espelha
             vfx.transform.localPosition = pos;
             vfx.transform.localEulerAngles = rot;
             vfx.transform.localScale = escala; 
-            
-            // 3. Zera o relógio interno da Unity para esta partícula
             vfx.time = 0f; 
-            
-            // 4. Dispara com força total como se fosse a primeira vez
             vfx.Play();
         }
     }

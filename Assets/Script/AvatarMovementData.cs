@@ -12,6 +12,7 @@ public class AvatarMovementData : ScriptableObject
     public float boxWidth = 0.6f;   
     public float boxHeight = 0.15f; 
     public float boxLength = 0.6f;  
+    public Vector3 boxOffset = Vector3.zero; // NOVO: Deslocamento livre da caixa
     
     [Header("Configurações Gerais de Queda")]
     public float extraFallGravityMultiplier = 2.0f; 
