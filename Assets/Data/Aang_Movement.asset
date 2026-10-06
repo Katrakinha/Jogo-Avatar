@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a59f4214a782604fafe1a11a6d4b66c, type: 3}
   m_Name: Aang_Movement
   m_EditorClassIdentifier: Assembly-CSharp::AvatarMovementData
-  moveSpeed: 20
+  moveSpeed: 10
   jumpForce: 15
   doubleJumpForce: 30
-  boxWidth: 2.52
-  boxHeight: -5.77
-  boxLength: 7.76
-  boxOffset: {x: 0, y: 0, z: 3.37}
+  boxWidth: 1.43
+  boxHeight: -1.52
+  boxLength: 2.79
+  boxOffset: {x: 0, y: 0, z: 1.09}
   extraFallGravityMultiplier: 2
   glideGravityForce: 5
   baseGlideForwardSpeed: 25
