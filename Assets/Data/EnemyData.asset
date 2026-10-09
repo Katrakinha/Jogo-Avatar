@@ -27,7 +27,7 @@ MonoBehaviour:
   knockbackMelee: 4
   tempoEntreAtaques: 2
   distanciaAtaqueMelee: 7
-  atiradorDeFogo: 0
-  projetilFogoPrefab: {fileID: 0}
+  atiradorDeFogo: 1
+  projetilFogoPrefab: {fileID: 5923645099684166215, guid: 3b913c0a2101afb4493b05d98c3e40bd, type: 3}
   distanciaAtaqueFogo: 8
   velocidadePerseguicao: 20
