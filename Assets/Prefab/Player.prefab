@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 398285323943114247}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.03299997, y: 0.033000007, z: 0.070000015}
+  m_LocalPosition: {x: 0.044, y: 0.033000007, z: 0.070000015}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5639,7 +5639,7 @@ Transform:
   m_GameObject: {fileID: 5259796220454454493}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.016000008, y: 0.011999997, z: 0.07400001}
+  m_LocalPosition: {x: -0.01600001, y: 0.011999997, z: 0.07400001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10529,6 +10529,7 @@ GameObject:
   - component: {fileID: 5535651452345073612}
   - component: {fileID: 3951597844515536216}
   - component: {fileID: 4696009793330633392}
+  - component: {fileID: 5307789481204893270}
   m_Layer: 6
   m_Name: aang
   m_TagString: Untagged
@@ -10616,6 +10617,11 @@ MonoBehaviour:
   earthData: {fileID: 11400000, guid: ab1179d3fcbf38b4a96db348c589b4d7, type: 2}
   anim: {fileID: 6663606444372284183}
   rb: {fileID: 4803925766655151977}
+  danoDaTerra: 15
+  forcaKnockbackTerra: 7
+  inimigoLayer:
+    serializedVersion: 2
+    m_Bits: 256
   controleAtaque: {fileID: 2302976752701488015, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   forcaQueda: 40
   onTremorDeTerra:
@@ -10699,6 +10705,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
   scriptCombate: {fileID: 692297995749115830}
+--- !u!114 &5307789481204893270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5900287553320085753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 711e73826eb0fb149b12e9d921bb027f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWaterBending
+  data: {fileID: 11400000, guid: eb9428b48fa14d04685f948b923e3002, type: 2}
+  scriptMovimento: {fileID: 3588276546762733334}
+  scriptCombate: {fileID: 692297995749115830}
+  controleMirarAgua: {fileID: 2744267959653407877, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  controleCriarGelo: {fileID: -8959283625774656355, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  camMiraObj: {fileID: 0}
+  camNormalObj: {fileID: 0}
+  miraUI: {fileID: 0}
+  prefabPilarGelo: {fileID: 4029773276558334495, guid: 30ec1eabb28d3a24688c4595235c8e79, type: 3}
+  prefabHolograma: {fileID: 4029773276558334495, guid: c1b4c797a5667164faaf5dfc62e0797f, type: 3}
+  velocidadeAnimacaoHolo: 1.5
+  cuboComPivotNoCentro: 1
+  anim: {fileID: 6663606444372284183}
 --- !u!1 &6058236268415032207
 GameObject:
   m_ObjectHideFlags: 0
@@ -15937,7 +15968,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 14.12111, y: 2.5, z: 10.87378}
-  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
+  m_LocalScale: {x: 1.0167134, y: 1.0167134, z: 1.0167134}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2309151072978499870}
@@ -15956,7 +15987,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6983751149598831181}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 19e902c12be070d43a543d3ebdbb3c86, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -16065,6 +16096,8 @@ MonoBehaviour:
   controlePular: {fileID: -2739345625967505645, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleCancelarPlanador: {fileID: 4280959201577128563, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleSopro: {fileID: 2026014550867235708, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  controleCameraX: {fileID: -2341881113516354377, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  controleCameraY: {fileID: 4899414465374297136, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
 --- !u!114 &692297995749115830
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21551,15 +21584,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalScale.x
-      value: 19.567
+      value: 24.525276
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalScale.y
-      value: 19.566996
+      value: 24.525272
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalScale.z
-      value: 19.566996
+      value: 24.525272
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalPosition.x
@@ -21567,7 +21600,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.479
+      value: -4.63
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 9e7096b565836e94a83fd991632b4e6c, type: 3}
       propertyPath: m_LocalPosition.z

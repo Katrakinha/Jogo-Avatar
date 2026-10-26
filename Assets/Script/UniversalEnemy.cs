@@ -53,6 +53,18 @@ public class UniversalEnemy : MonoBehaviour
             agent.speed = data.velocidadePatrulha;
             agent.SetDestination(waypoints[0].position);
         }
+
+        // IGNORA COLISÃO FÍSICA APENAS ENTRE OS DOIS CORPOS (MANTÉM AS HITBOXES FUNCIONANDO)
+        Collider meuColliderCorpo = GetComponent<Collider>();
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null && meuColliderCorpo != null)
+        {
+            Collider playerColliderCorpo = playerObj.GetComponent<Collider>();
+            if (playerColliderCorpo != null)
+            {
+                Physics.IgnoreCollision(meuColliderCorpo, playerColliderCorpo, true);
+            }
+        }
     }
 
     void Update()

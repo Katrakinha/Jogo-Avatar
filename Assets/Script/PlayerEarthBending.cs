@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
-using UnityEngine.Events; // NOVO: Para criarmos eventos no Inspector!
+using UnityEngine.Events; 
 
 public class PlayerEarthBending : MonoBehaviour
 {
@@ -11,6 +11,11 @@ public class PlayerEarthBending : MonoBehaviour
     public Animator anim;
     public Rigidbody rb;
 
+    [Header("Combate da Dobra")]
+    public float danoDaTerra = 15f;
+    public float forcaKnockbackTerra = 7f;
+    public LayerMask inimigoLayer; // NOVO: Atribua no Inspector a layer dos inimigos!
+
     [Header("Input")]
     public InputActionReference controleAtaque;
 
@@ -18,7 +23,7 @@ public class PlayerEarthBending : MonoBehaviour
     public float forcaQueda = 40f; 
 
     [Header("Efeitos Visuais e Som")]
-    public UnityEvent onTremorDeTerra; // NOVO: Gatilho para o Camera Shake e Sons!
+    public UnityEvent onTremorDeTerra; 
     
     private bool isSlamming = false;
     private bool isWindingUp = false; 
@@ -90,10 +95,29 @@ public class PlayerEarthBending : MonoBehaviour
     {
         if (anim != null) anim.speed = 0f; 
         
-        // A MÁGICA ACONTECE AQUI: No frame exato em que a mão bate no chão!
         if (onTremorDeTerra != null) onTremorDeTerra.Invoke();
         
+        // --- ONDA DE CHOQUE (DANO) ---
+        DispararDanoEmArea();
+
         StartCoroutine(RotinaOndasDeTerra());
+    }
+
+    private void DispararDanoEmArea()
+    {
+        if (earthData == null) return;
+
+        // Cria a esfera de dano do tamanho do anel mais distante da dobra
+        Collider[] inimigosAtingidos = Physics.OverlapSphere(transform.position, earthData.raioAnel3, inimigoLayer);
+        
+        foreach (Collider inimigo in inimigosAtingidos)
+        {
+            UniversalEnemy scriptInimigo = inimigo.GetComponent<UniversalEnemy>();
+            if (scriptInimigo != null)
+            {
+                scriptInimigo.ReceberDano(danoDaTerra, forcaKnockbackTerra, transform);
+            }
+        }
     }
 
     public void FinalizarDobraTerraEvent()

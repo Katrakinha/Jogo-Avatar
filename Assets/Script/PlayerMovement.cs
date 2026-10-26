@@ -24,7 +24,6 @@ public class PlayerMovement : MonoBehaviour
     public int soprosUsados = 0;
     public bool didSopro = false; 
     
-    // VARIÁVEIS DE COMBATE E MIRA
     public bool isAiming = false; 
     public bool isEarthSlamming = false; 
 
@@ -33,14 +32,15 @@ public class PlayerMovement : MonoBehaviour
     public InputActionReference controlePular;
     public InputActionReference controleCancelarPlanador;
     public InputActionReference controleSopro;
+    
+    [Header("Controles da Câmera (Para Ligar o Cinemachine)")]
+    public InputActionReference controleCameraX; // ARRASTE O CAMERAX AQUI NO INSPECTOR
+    public InputActionReference controleCameraY; // ARRASTE O CAMERAY AQUI NO INSPECTOR
 
     private Rigidbody rb;
     private Vector3 moveInput;
-    private Vector3 glideDirection;
-    private Vector3 scooterDirection; 
     private float mountTimer = 0f;
     private float efeitoInclinacaoSopro = 0f; 
-
     private float tempoCegoPulo = 0f;
 
     void Start()
@@ -56,6 +56,10 @@ public class PlayerMovement : MonoBehaviour
         controlePular.action.Enable();
         controleCancelarPlanador.action.Enable();
         controleSopro.action.Enable();
+        
+        // LIGANDO OS CONTROLES DA CÂMERA
+        if (controleCameraX != null) controleCameraX.action.Enable();
+        if (controleCameraY != null) controleCameraY.action.Enable();
     }
 
     void OnDisable()
@@ -64,6 +68,10 @@ public class PlayerMovement : MonoBehaviour
         controlePular.action.Disable();
         controleCancelarPlanador.action.Disable();
         controleSopro.action.Disable();
+        
+        // DESLIGANDO OS CONTROLES DA CÂMERA
+        if (controleCameraX != null) controleCameraX.action.Disable();
+        if (controleCameraY != null) controleCameraY.action.Disable();
     }
 
     void Update()
@@ -91,21 +99,11 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isAiming && !isEarthSlamming)
         {
-            // CORREÇÃO: O Botão "Bolinha" agora sabe exatamente o que cancelar!
             if (controleCancelarPlanador.action.WasPressedThisFrame())
             {
-                if (isGliding)
-                {
-                    PararPlanar();
-                }
-                else if (isAirScooter || isMountingAirScooter)
-                {
-                    DesmontarAirScooterComPulinho();
-                }
-                else if (isGrounded)
-                {
-                    AtivarAirScooter();
-                }
+                if (isGliding) PararPlanar();
+                else if (isAirScooter || isMountingAirScooter) DesmontarAirScooterComPulinho();
+                else if (isGrounded) AtivarAirScooter();
             }
 
             if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
@@ -113,7 +111,6 @@ public class PlayerMovement : MonoBehaviour
                 soprosUsados++;
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
                 rb.AddForce(Vector3.up * data.boostSoproForce, ForceMode.Impulse);
-                
                 didSopro = true; 
                 efeitoInclinacaoSopro = -50f; 
             }
@@ -126,8 +123,7 @@ public class PlayerMovement : MonoBehaviour
                     tempoCegoPulo = 0.15f; 
                     
                     PararPlanar();
-                    if (isAirScooter || isMountingAirScooter)
-                        DesativarAirScooterSilencioso();
+                    if (isAirScooter || isMountingAirScooter) DesativarAirScooterSilencioso();
                         
                     rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); 
                     rb.AddForce(Vector3.up * data.jumpForce, ForceMode.Impulse);
@@ -152,7 +148,6 @@ public class PlayerMovement : MonoBehaviour
 
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         rb.AddForce(Vector3.up * data.doubleJumpForce, ForceMode.Impulse);
-        
         didDoubleJump = true; 
     }
 
@@ -163,30 +158,19 @@ public class PlayerMovement : MonoBehaviour
         if (isGliding)
         {
             Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
-            float inputHorizontal = inputDir.x; 
-            float inputVertical = inputDir.y;   
-
-            if (Mathf.Abs(inputHorizontal) > 0.1f)
-            {
-                float turnSpeed = 90f * Time.fixedDeltaTime;
-                Quaternion turnOffset = Quaternion.Euler(0f, inputHorizontal * turnSpeed, 0f);
-                glideDirection = turnOffset * glideDirection;
-            }
-
-            float currentGlideSpeed = data.baseGlideForwardSpeed + (inputVertical * 5f);
+            Vector3 direcaoVoo = moveInput != Vector3.zero ? moveInput : transform.forward;
+            
+            float currentGlideSpeed = data.baseGlideForwardSpeed + (inputDir.y * 5f);
             currentGlideSpeed = Mathf.Max(currentGlideSpeed, 3f); 
             
-            Vector3 targetHorizVel = glideDirection * currentGlideSpeed;
+            Vector3 targetHorizVel = direcaoVoo * currentGlideSpeed;
             rb.linearVelocity = new Vector3(targetHorizVel.x, rb.linearVelocity.y, targetHorizVel.z);
-
             rb.AddForce(Vector3.down * data.glideGravityForce, ForceMode.Acceleration);
 
-            Quaternion baseRotation = Quaternion.LookRotation(glideDirection);
-            
+            Quaternion baseRotation = Quaternion.LookRotation(direcaoVoo);
             efeitoInclinacaoSopro = Mathf.Lerp(efeitoInclinacaoSopro, 0f, 5f * Time.fixedDeltaTime);
-            
-            float pitchAngle = (inputVertical * 30f) + efeitoInclinacaoSopro; 
-            float rollAngle = -inputHorizontal * data.maxBankAngle;
+            float pitchAngle = (inputDir.y * 30f) + efeitoInclinacaoSopro; 
+            float rollAngle = -inputDir.x * data.maxBankAngle;
             
             Quaternion finalRotation = baseRotation * Quaternion.Euler(pitchAngle, 0f, rollAngle) * Quaternion.Euler(90f, 0f, 0f);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, finalRotation, 10f * Time.fixedDeltaTime));
@@ -194,7 +178,6 @@ public class PlayerMovement : MonoBehaviour
         else if (isMountingAirScooter)
         {
             mountTimer -= Time.fixedDeltaTime;
-
             Vector3 targetVelocity = moveInput * data.moveSpeed;
             targetVelocity.y = rb.linearVelocity.y;
             rb.linearVelocity = targetVelocity;
@@ -209,40 +192,28 @@ public class PlayerMovement : MonoBehaviour
         else if (isAirScooter)
         {
             Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
-            float inputHorizontal = inputDir.x; 
-            float inputVertical = inputDir.y;   
-
-            if (Mathf.Abs(inputHorizontal) > 0.1f)
-            {
-                float turnSpeed = 120f * Time.fixedDeltaTime;
-                Quaternion turnOffset = Quaternion.Euler(0f, inputHorizontal * turnSpeed, 0f);
-                scooterDirection = turnOffset * scooterDirection;
-            }
+            Vector3 direcaoScooter = moveInput != Vector3.zero ? moveInput : transform.forward;
 
             if (isGrounded) 
             {
-                float currentScooterSpeed = data.airScooterSpeed + (inputVertical * 4f);
+                float currentScooterSpeed = data.airScooterSpeed + (inputDir.y * 4f);
                 currentScooterSpeed = Mathf.Max(currentScooterSpeed, 3f);
 
-                Vector3 targetScooterVel = scooterDirection * currentScooterSpeed;
+                Vector3 targetScooterVel = direcaoScooter * currentScooterSpeed;
                 targetScooterVel.y = rb.linearVelocity.y; 
                 rb.linearVelocity = targetScooterVel;
             }
             else 
             {
                 Vector3 fallVel = rb.linearVelocity;
-                fallVel.x = 0f; 
-                fallVel.z = 0f;
+                fallVel.x = 0f; fallVel.z = 0f;
                 fallVel.y += Physics.gravity.y * data.extraFallGravityMultiplier * Time.fixedDeltaTime;
                 rb.linearVelocity = fallVel;
             }
 
-            Quaternion baseRotation = Quaternion.LookRotation(scooterDirection);
-            
-            // CORREÇÃO: Inclinação total restaurada para todas as direções!
-            float pitchAngle = inputVertical * 20f;                  
-            float rollAngle = -inputHorizontal * (data.maxBankAngle * 0.8f); 
-            
+            Quaternion baseRotation = Quaternion.LookRotation(direcaoScooter);
+            float pitchAngle = inputDir.y * 20f;                  
+            float rollAngle = -inputDir.x * (data.maxBankAngle * 0.8f); 
             Quaternion finalRotation = baseRotation * Quaternion.Euler(pitchAngle, 0f, rollAngle);
             rb.MoveRotation(Quaternion.Slerp(rb.rotation, finalRotation, 12f * Time.fixedDeltaTime));
         }
@@ -266,16 +237,6 @@ public class PlayerMovement : MonoBehaviour
                     Quaternion targetRotation = Quaternion.LookRotation(moveInput);
                     rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 10f * Time.fixedDeltaTime));
                 }
-                else
-                {
-                    Vector3 currentFwd = transform.forward;
-                    currentFwd.y = 0f; 
-                    if (currentFwd != Vector3.zero)
-                    {
-                        Quaternion uprightRotation = Quaternion.LookRotation(currentFwd);
-                        rb.MoveRotation(Quaternion.Slerp(rb.rotation, uprightRotation, 10f * Time.fixedDeltaTime));
-                    }
-                }
             }
         }
     }
@@ -285,10 +246,6 @@ public class PlayerMovement : MonoBehaviour
         isMountingAirScooter = true;
         didMountAirScooter = true; 
         mountTimer = 0.15f; 
-
-        Vector3 fwd = transform.forward;
-        fwd.y = 0f;
-        scooterDirection = fwd != Vector3.zero ? fwd.normalized : Vector3.forward;
 
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         rb.AddForce(Vector3.up * data.mountJumpForce, ForceMode.Impulse);
@@ -301,7 +258,6 @@ public class PlayerMovement : MonoBehaviour
         if (objetoAirScooter != null) objetoAirScooter.SetActive(false);
 
         transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
-
         rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         rb.AddForce(Vector3.up * data.mountJumpForce, ForceMode.Impulse);
     }
@@ -311,7 +267,6 @@ public class PlayerMovement : MonoBehaviour
         isAirScooter = false;
         isMountingAirScooter = false;
         if (objetoAirScooter != null) objetoAirScooter.SetActive(false);
-        
         transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
     }
 
@@ -320,16 +275,6 @@ public class PlayerMovement : MonoBehaviour
         DesativarAirScooterSilencioso(); 
         isGliding = true;
         soprosUsados = 0;
-        
-        ValueCamFwd();
-    }
-
-    private void ValueCamFwd()
-    {
-        Vector3 camFwd = Camera.main.transform.forward;
-        camFwd.y = 0f;
-        glideDirection = camFwd != Vector3.zero ? camFwd.normalized : transform.forward;
-
         if (objetoPlanador != null) objetoPlanador.SetActive(true);
     }
 
@@ -339,7 +284,6 @@ public class PlayerMovement : MonoBehaviour
         {
             isGliding = false;
             if (objetoPlanador != null) objetoPlanador.SetActive(false);
-            
             transform.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         }
     }
@@ -359,7 +303,6 @@ public class PlayerMovement : MonoBehaviour
             
             isGrounded = Physics.CheckBox(boxCenter, boxSize / 2f, groundCheck.rotation, groundLayer);
             
-            // CORREÇÃO: O Laser agora protege tanto o Patinete quanto o Planador para aterrares sempre em segurança!
             if (!isGrounded && (isAirScooter || isGliding))
             {
                 isGrounded = Physics.Raycast(boxCenter, Vector3.down, 10f, groundLayer);

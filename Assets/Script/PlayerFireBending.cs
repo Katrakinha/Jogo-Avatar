@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Unity.Cinemachine;
 
 public class PlayerFireBending : MonoBehaviour
 {
@@ -13,14 +14,14 @@ public class PlayerFireBending : MonoBehaviour
 
     [Header("Câmera e UI (Mira)")]
     public GameObject camMiraObj; 
-    public GameObject camNormalObj; // <--- NOVA VARIÁVEL: A tua câmera de exploração
+    public GameObject camNormalObj; 
     public GameObject miraUI;     
 
     [Header("Tiro e Mãos")]
     public GameObject prefabBolaDeFogo;
     public Transform maoDireita;
     public Transform maoEsquerda;
-    public float forcaDoTiro = 60f; // Aumentei um bocadinho para a bola ser rápida!
+    public float forcaDoTiro = 60f; 
 
     [Header("Cadência de Tiro (Recoil)")]
     public float tempoEntreTiros = 0.4f; 
@@ -32,13 +33,20 @@ public class PlayerFireBending : MonoBehaviour
     private bool isAiming = false;
     private bool atirarComDireita = true; 
     private Transform mainCam;
+    private CinemachinePanTilt panTiltMira;
 
     void Start()
     {
         mainCam = Camera.main.transform;
         
-        if(camMiraObj) camMiraObj.SetActive(false);
-        if(miraUI) miraUI.SetActive(false);
+        if (camMiraObj != null)
+        {
+            panTiltMira = camMiraObj.GetComponent<CinemachinePanTilt>();
+            if (panTiltMira != null) panTiltMira.ReferenceFrame = CinemachinePanTilt.ReferenceFrames.World;
+            camMiraObj.SetActive(false);
+        }
+        
+        if (miraUI) miraUI.SetActive(false);
     }
 
     void OnEnable()
@@ -57,27 +65,38 @@ public class PlayerFireBending : MonoBehaviour
     {
         isAiming = controleMirar.action.IsPressed();
 
-        if (scriptMovimento != null) scriptMovimento.isAiming = isAiming;
-        if (scriptCombate != null) scriptCombate.enabled = !isAiming;
+        // ACORDO DE PAZ: Verifica se a Água está a usar a mira
+        PlayerWaterBending scriptAgua = GetComponent<PlayerWaterBending>();
+        bool aguaMirando = scriptAgua != null && scriptAgua.controleMirarAgua.action.IsPressed();
 
         if (tiroTimer > 0) tiroTimer -= Time.deltaTime;
 
         if (isAiming)
         {
-            if(camMiraObj && !camMiraObj.activeSelf) camMiraObj.SetActive(true);
-            if(miraUI && !miraUI.activeSelf) miraUI.SetActive(true);
-            
-            Vector3 camForward = mainCam.forward;
-            camForward.y = 0f; 
-            
-            if (camForward != Vector3.zero)
+            Transform playerRoot = scriptMovimento != null ? scriptMovimento.transform : transform.root;
+            if (scriptMovimento != null) scriptMovimento.isAiming = true;
+            if (scriptCombate != null) scriptCombate.enabled = false;
+
+            if (camMiraObj && !camMiraObj.activeSelf)
             {
-                Transform objetoParaRodar = transform.parent != null ? transform.parent : transform;
-                objetoParaRodar.rotation = Quaternion.Slerp(
-                    objetoParaRodar.rotation, 
-                    Quaternion.LookRotation(camForward), 
-                    25f * Time.deltaTime 
-                );
+                float anguloAtualDoAang = Mathf.DeltaAngle(0f, playerRoot.eulerAngles.y);
+                camMiraObj.SetActive(true);
+
+                if (panTiltMira == null) panTiltMira = camMiraObj.GetComponent<CinemachinePanTilt>();
+                if (panTiltMira != null)
+                {
+                    panTiltMira.ReferenceFrame = CinemachinePanTilt.ReferenceFrames.World;
+                    panTiltMira.PanAxis.Value = anguloAtualDoAang;
+                    panTiltMira.TiltAxis.Value = 0f;
+                }
+            }
+
+            if (miraUI && !miraUI.activeSelf) miraUI.SetActive(true);
+            
+            if (panTiltMira != null)
+            {
+                Quaternion rotacaoAlvo = Quaternion.Euler(0f, panTiltMira.PanAxis.Value, 0f);
+                playerRoot.rotation = Quaternion.Slerp(playerRoot.rotation, rotacaoAlvo, 25f * Time.deltaTime);
             }
 
             if (controleAtirar.action.WasPressedThisFrame() && tiroTimer <= 0f)
@@ -90,18 +109,18 @@ public class PlayerFireBending : MonoBehaviour
                 tiroTimer = tempoEntreTiros; 
             }
         }
-        else
+        else if (!aguaMirando) // SÓ DESLIGA SE A ÁGUA TAMBÉM NÃO ESTIVER A USAR
         {
-            if(camMiraObj && camMiraObj.activeSelf) camMiraObj.SetActive(false);
-            if(miraUI && miraUI.activeSelf) miraUI.SetActive(false);
+            if (scriptMovimento != null) scriptMovimento.isAiming = false;
+            if (scriptCombate != null) scriptCombate.enabled = true;
+            if (camMiraObj && camMiraObj.activeSelf) camMiraObj.SetActive(false);
+            if (miraUI && miraUI.activeSelf) miraUI.SetActive(false);
         }
         
-        // A MAGIA ACONTECE AQUI: No exato milissegundo em que largas o L2
-        if (controleMirar.action.WasReleasedThisFrame())
+        if (controleMirar.action.WasReleasedThisFrame() && !aguaMirando)
         {
             if (camNormalObj != null)
             {
-                // Desliga e liga a câmera para resetar o eixo dela para as costas do Aang
                 camNormalObj.SetActive(false);
                 camNormalObj.SetActive(true);
             }
@@ -112,21 +131,19 @@ public class PlayerFireBending : MonoBehaviour
 
     public void DispararBolaDeFogoEvent()
     {
+        // A lógica de disparo mantém-se igual
         Transform maoAtual = atirarComDireita ? maoDireita : maoEsquerda;
         atirarComDireita = !atirarComDireita; 
 
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)); 
         Vector3 pontoAlvo;
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 100f))
-            pontoAlvo = hit.point;
-        else
-            pontoAlvo = ray.GetPoint(100f); 
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f)) pontoAlvo = hit.point;
+        else pontoAlvo = ray.GetPoint(100f); 
 
         if (prefabBolaDeFogo != null && maoAtual != null)
         {
             GameObject bolaDeFogo = Instantiate(prefabBolaDeFogo, maoAtual.position, Quaternion.identity);
-            
             Vector3 direcaoTiro = (pontoAlvo - maoAtual.position).normalized;
             bolaDeFogo.transform.forward = direcaoTiro; 
 

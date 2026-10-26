@@ -95,12 +95,21 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Agua",
+                    "type": "Button",
+                    "id": "c98e3b3e-df0c-46f5-8a8b-b232b4491be0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
                 {
                     "name": "2D Vector",
-                    "id": "bc4c06c0-0f88-4b5c-a584-54462955ebbd",
+                    "id": "e81d68a2-1111-4444-9999-abcdef123456",
                     "path": "2DVector",
                     "interactions": "",
                     "processors": "",
@@ -359,6 +368,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Atirar",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a1b2c3d4-e5f6-7777-8888-999999999999",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Agua",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d4c3b2a1-e5f6-7777-8888-999999999999",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Agua",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
