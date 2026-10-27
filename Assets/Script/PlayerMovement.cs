@@ -26,16 +26,19 @@ public class PlayerMovement : MonoBehaviour
     
     public bool isAiming = false; 
     public bool isEarthSlamming = false; 
+    public bool isAttacking = false;
 
     [Header("Controles (Novo Input System)")]
     public InputActionReference controleMover;
     public InputActionReference controlePular;
     public InputActionReference controleCancelarPlanador;
     public InputActionReference controleSopro;
+    // --- NOVO: Botão Exclusivo para o Patinete Aéreo ---
+    public InputActionReference controleAirScooter; 
     
     [Header("Controles da Câmera (Para Ligar o Cinemachine)")]
-    public InputActionReference controleCameraX; // ARRASTE O CAMERAX AQUI NO INSPECTOR
-    public InputActionReference controleCameraY; // ARRASTE O CAMERAY AQUI NO INSPECTOR
+    public InputActionReference controleCameraX; 
+    public InputActionReference controleCameraY; 
 
     private Rigidbody rb;
     private Vector3 moveInput;
@@ -57,7 +60,9 @@ public class PlayerMovement : MonoBehaviour
         controleCancelarPlanador.action.Enable();
         controleSopro.action.Enable();
         
-        // LIGANDO OS CONTROLES DA CÂMERA
+        // HABILITANDO O NOVO CONTROLE DO PATINETE
+        if (controleAirScooter != null) controleAirScooter.action.Enable();
+        
         if (controleCameraX != null) controleCameraX.action.Enable();
         if (controleCameraY != null) controleCameraY.action.Enable();
     }
@@ -69,7 +74,9 @@ public class PlayerMovement : MonoBehaviour
         controleCancelarPlanador.action.Disable();
         controleSopro.action.Disable();
         
-        // DESLIGANDO OS CONTROLES DA CÂMERA
+        // DESABILITANDO O NOVO CONTROLE DO PATINETE
+        if (controleAirScooter != null) controleAirScooter.action.Disable();
+        
         if (controleCameraX != null) controleCameraX.action.Disable();
         if (controleCameraY != null) controleCameraY.action.Disable();
     }
@@ -99,11 +106,28 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isAiming && !isEarthSlamming)
         {
+            // O botão de cancelar planador agora só fecha o planador!
             if (controleCancelarPlanador.action.WasPressedThisFrame())
             {
                 if (isGliding) PararPlanar();
-                else if (isAirScooter || isMountingAirScooter) DesmontarAirScooterComPulinho();
-                else if (isGrounded) AtivarAirScooter();
+            }
+
+            // O NOVO botão gerencia apenas o Air Scooter
+            if (controleAirScooter != null && controleAirScooter.action.WasPressedThisFrame())
+            {
+                // Se está a planar, não pode ativar a bola de ar
+                if (!isGliding)
+                {
+                    // Se já estiver no Air Scooter, desmonta. Se estiver no chão (e sem Air Scooter), monta!
+                    if (isAirScooter || isMountingAirScooter) 
+                    {
+                        DesmontarAirScooterComPulinho();
+                    }
+                    else if (isGrounded) 
+                    {
+                        AtivarAirScooter();
+                    }
+                }
             }
 
             if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
@@ -154,6 +178,15 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
         if (isEarthSlamming) return; 
+        if (isAttacking)
+        {
+            if (moveInput != Vector3.zero && !isAiming)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+                rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 15f * Time.fixedDeltaTime));
+            }
+            return; 
+        }
 
         if (isGliding)
         {

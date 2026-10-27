@@ -20,4 +20,12 @@ public class PlayerAnimationEvents : MonoBehaviour
     {
         if (scriptCombate != null) scriptCombate.AnimEvent_FimDoAtaque();
     }
+
+    // ==========================================
+    // NOVO: A PONTE PARA O IMPULSO FÍSICO!
+    // ==========================================
+    public void AnimEvent_ImpulsoAtaque()
+    {
+        if (scriptCombate != null) scriptCombate.AnimEvent_ImpulsoAtaque();
+    }
 }

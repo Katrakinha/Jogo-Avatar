@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: AvatarCombat
   m_EditorClassIdentifier: Assembly-CSharp::AvatarCombatData
   tempoJanelaCombo: 1
-  avancoAtk1: 9
-  avancoAtk2: 9
+  avancoAtaque: 80
   danoAtaqueBase: 10
-  forcaKnockback: 10
+  forcaKnockback: 15
   layerInimigos:
     serializedVersion: 2
     m_Bits: 256

@@ -80,15 +80,22 @@ public class PlayerWaterBending : MonoBehaviour
 
             if (camMiraObj && !camMiraObj.activeSelf)
             {
-                float anguloAtualDoAang = Mathf.DeltaAngle(0f, playerRoot.eulerAngles.y);
                 camMiraObj.SetActive(true);
 
                 if (panTiltMira == null) panTiltMira = camMiraObj.GetComponent<CinemachinePanTilt>();
                 if (panTiltMira != null)
                 {
                     panTiltMira.ReferenceFrame = CinemachinePanTilt.ReferenceFrames.World;
-                    panTiltMira.PanAxis.Value = anguloAtualDoAang;
-                    panTiltMira.TiltAxis.Value = 0f;
+                    
+                    // A MÁGICA: Copia o ângulo exato em que a câmera do Zelda estava olhando!
+                    float cameraPan = mainCam.eulerAngles.y;
+                    float cameraTilt = mainCam.eulerAngles.x;
+                    
+                    // Converte o ângulo vertical (Tilt) para o padrão do Cinemachine (negativo/positivo)
+                    if (cameraTilt > 180f) cameraTilt -= 360f;
+
+                    panTiltMira.PanAxis.Value = cameraPan;
+                    panTiltMira.TiltAxis.Value = cameraTilt; 
                 }
             }
 
