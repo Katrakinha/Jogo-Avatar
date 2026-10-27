@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using Unity.Cinemachine;
+using System.Collections; // Necessário para a Corrotina de queda
 
 public class PlayerWaterBending : MonoBehaviour
 {
@@ -29,6 +30,16 @@ public class PlayerWaterBending : MonoBehaviour
     public float velocidadeAnimacaoHolo = 1.5f; 
     public bool cuboComPivotNoCentro = true;    
 
+    [Header("Esfera de Água Visual (NOVO)")]
+    [Tooltip("O Prefab da Esfera com o material de água liso")]
+    public GameObject prefabEsferaAgua;
+    [Tooltip("O ponto (Empty) na mão ou perto do Aang onde a água vai flutuar")]
+    public Transform pontoEsferaAgua;
+    [Tooltip("De quão alto a água vem caindo ao começar a mirar (ex: 2 metros acima)")]
+    public float alturaOrigemEsfera = 2f;
+    [Tooltip("Velocidade que a esfera desce até a mão")]
+    public float velocidadePuxaoEsfera = 8f;
+
     [Header("Referências")]
     public Animator anim;
 
@@ -38,6 +49,8 @@ public class PlayerWaterBending : MonoBehaviour
     private Queue<GameObject> pilaresAtivos = new Queue<GameObject>();
     
     private GameObject hologramaInstancia; 
+    private GameObject esferaInstancia; // A bolota de água atual
+    private bool usouHabilidade = false; // Controle para saber se atirou
     
     private bool mirandoNaAgua = false;
     private Vector3 pontoAlvoAgua;
@@ -51,7 +64,6 @@ public class PlayerWaterBending : MonoBehaviour
 
     void OnEnable()
     {
-        // Travas de segurança para a Unity não quebrar se perder a referência
         if (controleMirarAgua != null) controleMirarAgua.action.Enable();
         if (controleCriarGelo != null) controleCriarGelo.action.Enable();
     }
@@ -86,12 +98,8 @@ public class PlayerWaterBending : MonoBehaviour
                 if (panTiltMira != null)
                 {
                     panTiltMira.ReferenceFrame = CinemachinePanTilt.ReferenceFrames.World;
-                    
-                    // A MÁGICA: Copia o ângulo exato em que a câmera do Zelda estava olhando!
                     float cameraPan = mainCam.eulerAngles.y;
                     float cameraTilt = mainCam.eulerAngles.x;
-                    
-                    // Converte o ângulo vertical (Tilt) para o padrão do Cinemachine (negativo/positivo)
                     if (cameraTilt > 180f) cameraTilt -= 360f;
 
                     panTiltMira.PanAxis.Value = cameraPan;
@@ -109,11 +117,32 @@ public class PlayerWaterBending : MonoBehaviour
 
             AtualizarHolograma();
 
+            // --- LÓGICA DA ESFERA DE ÁGUA (Puxando) ---
+            if (esferaInstancia == null && prefabEsferaAgua != null && pontoEsferaAgua != null)
+            {
+                // Instancia a esfera mais alta para dar o efeito de puxar de cima
+                Vector3 posicaoAlta = pontoEsferaAgua.position + (Vector3.up * alturaOrigemEsfera);
+                esferaInstancia = Instantiate(prefabEsferaAgua, posicaoAlta, Quaternion.identity);
+                usouHabilidade = false; // Reset da ação
+            }
+
+            // Move a esfera suavemente para a mão se ainda não atirou
+            if (esferaInstancia != null && !usouHabilidade)
+            {
+                esferaInstancia.SetActive(true);
+                esferaInstancia.transform.position = Vector3.Lerp(esferaInstancia.transform.position, pontoEsferaAgua.position, Time.deltaTime * velocidadePuxaoEsfera);
+            }
+
             // LÊ O R2 COM SEGURANÇA
             if (controleCriarGelo != null && controleCriarGelo.action.WasPressedThisFrame())
             {
                 Debug.Log("+++ [ÁGUA] Botão R2 pressionado! +++");
                 if (anim != null) anim.SetTrigger("CastWater"); 
+                
+                // O Jogador atirou! Esconde a esfera imediatamente para abrir espaço pro VFX
+                usouHabilidade = true;
+                if (esferaInstancia != null) esferaInstancia.SetActive(false);
+
                 TentarCriarPilarDeGelo();
             }
         }
@@ -128,12 +157,29 @@ public class PlayerWaterBending : MonoBehaviour
             if (miraUI && miraUI.activeSelf) miraUI.SetActive(false);
         }
 
+        // SOLTOU O BOTÃO DE MIRAR
         if (controleMirarAgua.action.WasReleasedThisFrame() && !fogoMirando)
         {
             if (camNormalObj != null)
             {
                 camNormalObj.SetActive(false);
                 camNormalObj.SetActive(true);
+            }
+
+            // --- LÓGICA DA ESFERA DE ÁGUA (Caindo ou Limpando) ---
+            if (esferaInstancia != null)
+            {
+                // Se soltou a mira sem fazer nada, deixa a água cair no chão
+                if (!usouHabilidade && esferaInstancia.activeSelf)
+                {
+                    StartCoroutine(RotinaGotaCaindo(esferaInstancia));
+                }
+                else
+                {
+                    // Se já tinha atirado (e ela estava invisível), só destrói pra criar outra depois
+                    Destroy(esferaInstancia); 
+                }
+                esferaInstancia = null; // Desvincula para o script criar uma nova na próxima mira
             }
         }
 
@@ -218,5 +264,32 @@ public class PlayerWaterBending : MonoBehaviour
 
             pilaresAtivos.Enqueue(novoPilar);
         }
+    }
+
+    // --- CORROTINA DA QUEDA DA ÁGUA ---
+    private IEnumerator RotinaGotaCaindo(GameObject gota)
+    {
+        Vector3 posInicial = gota.transform.position;
+        Vector3 posChao = posInicial + (Vector3.down * 1.5f); // Cai um metro e meio
+        Vector3 escalaInicial = gota.transform.localScale;
+
+        float timer = 0f;
+        float duracaoQueda = 0.3f; // Cai bem rápido!
+
+        while (timer < duracaoQueda)
+        {
+            timer += Time.deltaTime;
+            float t = timer / duracaoQueda;
+
+            if (gota != null)
+            {
+                // A água cai e vai encolhendo ao mesmo tempo
+                gota.transform.position = Vector3.Lerp(posInicial, posChao, t);
+                gota.transform.localScale = Vector3.Lerp(escalaInicial, Vector3.zero, t);
+            }
+            yield return null;
+        }
+
+        if (gota != null) Destroy(gota); // Limpa a memória
     }
 }

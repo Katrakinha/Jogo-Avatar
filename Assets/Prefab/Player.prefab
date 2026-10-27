@@ -25,12 +25,43 @@ Transform:
   m_GameObject: {fileID: 398285323943114247}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.044, y: 0.033000007, z: 0.070000015}
+  m_LocalPosition: {x: 0.044, y: 0.03300001, z: 0.07000002}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7475034350104288923}
   m_Father: {fileID: 3301025565837601168}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &452935864335540504
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7156780698940044622}
+  m_Layer: 6
+  m_Name: PontoAgua
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7156780698940044622
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 452935864335540504}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 4.58, z: 5.18}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1428109626880429489}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &904774100332129636
 GameObject:
@@ -315,6 +346,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHitbox
   data: {fileID: 11400000, guid: 093e4a9c5e410c8449d34866b0a15bc8, type: 2}
   playerRoot: {fileID: 3301025565837601168}
+--- !u!1 &3451412907177989584
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5841934770124682191}
+  m_Layer: 6
+  m_Name: Whip
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5841934770124682191
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3451412907177989584}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.0201, z: 0.0247}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3029782233175395551}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3580303695677468447
 GameObject:
   m_ObjectHideFlags: 0
@@ -5395,6 +5457,96 @@ Transform:
   - {fileID: 1654713164593370227}
   m_Father: {fileID: 3301025565837601168}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4377018201387221797
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7846188613185669546}
+  - component: {fileID: 5153176670471664351}
+  - component: {fileID: 8847687765849305871}
+  m_Layer: 6
+  m_Name: chicote
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7846188613185669546
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4377018201387221797}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1428109626880429489}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &5153176670471664351
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4377018201387221797}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &8847687765849305871
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4377018201387221797}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: cbf012a8c558ab44db851b0fd31309a2, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4431488725407327066
 GameObject:
   m_ObjectHideFlags: 0
@@ -10530,6 +10682,7 @@ GameObject:
   - component: {fileID: 3951597844515536216}
   - component: {fileID: 4696009793330633392}
   - component: {fileID: 5307789481204893270}
+  - component: {fileID: 5937525356685468729}
   m_Layer: 6
   m_Name: aang
   m_TagString: Untagged
@@ -10729,7 +10882,30 @@ MonoBehaviour:
   prefabHolograma: {fileID: 4029773276558334495, guid: c1b4c797a5667164faaf5dfc62e0797f, type: 3}
   velocidadeAnimacaoHolo: 1.5
   cuboComPivotNoCentro: 1
+  prefabEsferaAgua: {fileID: 4875220354319295933, guid: eb748dc3d699a5b48aa056d7b7d36d2c, type: 3}
+  pontoEsferaAgua: {fileID: 7156780698940044622}
+  alturaOrigemEsfera: 2
+  velocidadePuxaoEsfera: 8
   anim: {fileID: 6663606444372284183}
+--- !u!114 &5937525356685468729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5900287553320085753}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82f72bf1a0731414ea2259c07545be02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerWaterHook
+  controleMirar: {fileID: 2744267959653407877, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  controleAcao: {fileID: -8959283625774656355, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  anim: {fileID: 6663606444372284183}
+  scriptMovimento: {fileID: 3588276546762733334}
+  maoChicote: {fileID: 5841934770124682191}
+  uiMiraGancho: {fileID: 0}
+  chicote3D: {fileID: 7846188613185669546}
 --- !u!1 &6058236268415032207
 GameObject:
   m_ObjectHideFlags: 0
@@ -10854,6 +11030,7 @@ Transform:
   m_Children:
   - {fileID: 3222515026822692092}
   - {fileID: 1458798916443233639}
+  - {fileID: 5841934770124682191}
   m_Father: {fileID: 7751693304852925689}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6996096880464504188
@@ -15978,6 +16155,8 @@ Transform:
   - {fileID: 5268769894019518007}
   - {fileID: 8361472731677231165}
   - {fileID: 2750076237331235403}
+  - {fileID: 7846188613185669546}
+  - {fileID: 7156780698940044622}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &1797722775196323871
@@ -16092,10 +16271,12 @@ MonoBehaviour:
   didSopro: 0
   isAiming: 0
   isEarthSlamming: 0
+  isAttacking: 0
   controleMover: {fileID: 8716340676697639363, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controlePular: {fileID: -2739345625967505645, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleCancelarPlanador: {fileID: 4280959201577128563, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleSopro: {fileID: 2026014550867235708, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
+  controleAirScooter: {fileID: 4418328450472132969, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleCameraX: {fileID: -2341881113516354377, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
   controleCameraY: {fileID: 4899414465374297136, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
 --- !u!114 &692297995749115830
