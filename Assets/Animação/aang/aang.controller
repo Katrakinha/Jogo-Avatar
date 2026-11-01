@@ -1043,7 +1043,7 @@ AnimatorController:
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
-    m_DefaultBool: 1
+    m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: Pulo
     m_Type: 9
@@ -1270,7 +1270,7 @@ AnimatorStateMachine:
   m_ChildStates:
   - serializedVersion: 1
     m_State: {fileID: -6499869137155058721}
-    m_Position: {x: 235, y: 65, z: 0}
+    m_Position: {x: 220, y: 0, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 4225683009380469570}
     m_Position: {x: -10, y: -380, z: 0}

@@ -15,10 +15,10 @@ MonoBehaviour:
   moveSpeed: 20
   jumpForce: 30
   doubleJumpForce: 45
-  boxWidth: 3.65
-  boxHeight: -2.42
-  boxLength: 8.36
-  boxOffset: {x: 0, y: -0.34, z: 3.42}
+  boxWidth: 2.98
+  boxHeight: 8.1
+  boxLength: 4.49
+  boxOffset: {x: 0, y: 2.57, z: 0}
   extraFallGravityMultiplier: 5
   glideGravityForce: 5
   baseGlideForwardSpeed: 25

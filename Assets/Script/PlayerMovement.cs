@@ -33,7 +33,6 @@ public class PlayerMovement : MonoBehaviour
     public InputActionReference controlePular;
     public InputActionReference controleCancelarPlanador;
     public InputActionReference controleSopro;
-    // --- NOVO: Botão Exclusivo para o Patinete Aéreo ---
     public InputActionReference controleAirScooter; 
     
     [Header("Controles da Câmera (Para Ligar o Cinemachine)")]
@@ -55,28 +54,22 @@ public class PlayerMovement : MonoBehaviour
 
     void OnEnable()
     {
-        controleMover.action.Enable();
-        controlePular.action.Enable();
-        controleCancelarPlanador.action.Enable();
-        controleSopro.action.Enable();
-        
-        // HABILITANDO O NOVO CONTROLE DO PATINETE
+        if (controleMover != null) controleMover.action.Enable();
+        if (controlePular != null) controlePular.action.Enable();
+        if (controleCancelarPlanador != null) controleCancelarPlanador.action.Enable();
+        if (controleSopro != null) controleSopro.action.Enable();
         if (controleAirScooter != null) controleAirScooter.action.Enable();
-        
         if (controleCameraX != null) controleCameraX.action.Enable();
         if (controleCameraY != null) controleCameraY.action.Enable();
     }
 
     void OnDisable()
     {
-        controleMover.action.Disable();
-        controlePular.action.Disable();
-        controleCancelarPlanador.action.Disable();
-        controleSopro.action.Disable();
-        
-        // DESABILITANDO O NOVO CONTROLE DO PATINETE
+        if (controleMover != null) controleMover.action.Disable();
+        if (controlePular != null) controlePular.action.Disable();
+        if (controleCancelarPlanador != null) controleCancelarPlanador.action.Disable();
+        if (controleSopro != null) controleSopro.action.Disable();
         if (controleAirScooter != null) controleAirScooter.action.Disable();
-        
         if (controleCameraX != null) controleCameraX.action.Disable();
         if (controleCameraY != null) controleCameraY.action.Disable();
     }
@@ -88,7 +81,9 @@ public class PlayerMovement : MonoBehaviour
         didMountAirScooter = false; 
         didDoubleJump = false; 
 
-        Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
+        Vector2 inputDir = Vector2.zero;
+        if (controleMover != null) inputDir = controleMover.action.ReadValue<Vector2>();
+        
         float moveX = inputDir.x;
         float moveZ = inputDir.y;
         
@@ -106,19 +101,15 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isAiming && !isEarthSlamming)
         {
-            // O botão de cancelar planador agora só fecha o planador!
-            if (controleCancelarPlanador.action.WasPressedThisFrame())
+            if (controleCancelarPlanador != null && controleCancelarPlanador.action.WasPressedThisFrame())
             {
                 if (isGliding) PararPlanar();
             }
 
-            // O NOVO botão gerencia apenas o Air Scooter
             if (controleAirScooter != null && controleAirScooter.action.WasPressedThisFrame())
             {
-                // Se está a planar, não pode ativar a bola de ar
                 if (!isGliding)
                 {
-                    // Se já estiver no Air Scooter, desmonta. Se estiver no chão (e sem Air Scooter), monta!
                     if (isAirScooter || isMountingAirScooter) 
                     {
                         DesmontarAirScooterComPulinho();
@@ -130,7 +121,7 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
-            if (isGliding && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
+            if (isGliding && controleSopro != null && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
             {
                 soprosUsados++;
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
@@ -139,7 +130,7 @@ public class PlayerMovement : MonoBehaviour
                 efeitoInclinacaoSopro = -50f; 
             }
 
-            if (controlePular.action.WasPressedThisFrame())
+            if (controlePular != null && controlePular.action.WasPressedThisFrame())
             {
                 if (pulosRealizados == 0 && isGrounded) 
                 {
@@ -190,7 +181,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (isGliding)
         {
-            Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
+            Vector2 inputDir = controleMover != null ? controleMover.action.ReadValue<Vector2>() : Vector2.zero;
             Vector3 direcaoVoo = moveInput != Vector3.zero ? moveInput : transform.forward;
             
             float currentGlideSpeed = data.baseGlideForwardSpeed + (inputDir.y * 5f);
@@ -224,7 +215,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (isAirScooter)
         {
-            Vector2 inputDir = controleMover.action.ReadValue<Vector2>();
+            Vector2 inputDir = controleMover != null ? controleMover.action.ReadValue<Vector2>() : Vector2.zero;
             Vector3 direcaoScooter = moveInput != Vector3.zero ? moveInput : transform.forward;
 
             if (isGrounded) 
@@ -334,6 +325,24 @@ public class PlayerMovement : MonoBehaviour
             Vector3 boxSize = new Vector3(data.boxWidth, data.boxHeight, data.boxLength);
             Vector3 boxCenter = groundCheck.position + groundCheck.TransformDirection(data.boxOffset);
             
+            // --- O RADAR DE DEBUG ABSOLUTO ---
+            Collider[] hits = Physics.OverlapBox(boxCenter, boxSize / 2f, groundCheck.rotation);
+            if (hits.Length > 0)
+            {
+                foreach(Collider hit in hits)
+                {
+                    if (hit.gameObject != this.gameObject) // Ignora o próprio Aang
+                    {
+                        Debug.Log("+++ RADAR DA CAIXA BATEU EM: [" + hit.gameObject.name + "] | Layer lida pela Unity: [" + LayerMask.LayerToName(hit.gameObject.layer) + "]");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("--- RADAR VAZIO! A CAIXA VERMELHA NAO ENCOSTOU EM NENHUM COLLIDER!");
+            }
+            // ----------------------------------
+
             isGrounded = Physics.CheckBox(boxCenter, boxSize / 2f, groundCheck.rotation, groundLayer);
             
             if (!isGrounded && (isAirScooter || isGliding))
@@ -346,6 +355,8 @@ public class PlayerMovement : MonoBehaviour
                 pulosRealizados = 0; 
                 PararPlanar();
             }
+
+            Debug.Log("Resultado final (isGrounded): " + isGrounded);
         }
     }
 
