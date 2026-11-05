@@ -130,7 +130,7 @@ public class PlayerWaterBending : MonoBehaviour
             if (esferaInstancia != null && !usouHabilidade)
             {
                 esferaInstancia.SetActive(true);
-                esferaInstancia.transform.position = Vector3.Lerp(esferaInstancia.transform.position, pontoEsferaAgua.position, Time.deltaTime * velocidadePuxaoEsfera);
+                //esferaInstancia.transform.position = Vector3.Lerp(esferaInstancia.transform.position, pontoEsferaAgua.position, Time.deltaTime * velocidadePuxaoEsfera);
             }
 
             // LÊ O R2 COM SEGURANÇA
@@ -169,6 +169,12 @@ public class PlayerWaterBending : MonoBehaviour
             // --- LÓGICA DA ESFERA DE ÁGUA (Caindo ou Limpando) ---
             if (esferaInstancia != null)
             {
+                // ---> AS DUAS LINHAS NOVAS AQUI <---
+                // Desliga o script de seguir a mira para a água poder cair!
+                AguaFluidaUI scriptFluido = esferaInstancia.GetComponent<AguaFluidaUI>();
+                if (scriptFluido != null) scriptFluido.enabled = false;
+                // -----------------------------------
+
                 // Se soltou a mira sem fazer nada, deixa a água cair no chão
                 if (!usouHabilidade && esferaInstancia.activeSelf)
                 {

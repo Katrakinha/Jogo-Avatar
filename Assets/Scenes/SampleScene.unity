@@ -3094,6 +3094,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.107
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.026
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.213
+      objectReference: {fileID: 0}
     - target: {fileID: 117307820590635892, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
       propertyPath: miraUI
       value: 
@@ -3117,6 +3129,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
       propertyPath: m_Layer
       value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1428109626880429489, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3543,6 +3559,11 @@ Transform:
 --- !u!4 &1097016280 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2309151072978499870, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
+  m_PrefabInstance: {fileID: 1097016278}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1097016287 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6663606444372284183, guid: 4fe0c7fd6f6d1794e90046bd6d6e0d33, type: 3}
   m_PrefabInstance: {fileID: 1097016278}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1135265954
@@ -4575,7 +4596,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LegoBuilder
   controleConstruir: {fileID: 2335711808822106987, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
-  animadorJogador: {fileID: 0}
+  animadorJogador: {fileID: 1097016287}
   parametroConstruindo: isBuilding
   tempoPorPeca: 0.4
   intervaloEntrePecas: 0.5
@@ -4603,7 +4624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PortaoManivela
   controleInteracao: {fileID: -6041725402251174803, guid: f17acbcfa6f77e445aeb765b10750974, type: 3}
-  animadorJogador: {fileID: 0}
+  animadorJogador: {fileID: 1097016287}
   parametroGirando: isBendingCrank
   efeitoTornadoVFX: {fileID: 891364058}
   tempoParaAbrirTotal: 3
@@ -9732,16 +9753,28 @@ PrefabInstance:
       value: Agua
       objectReference: {fileID: 0}
     - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 25.815159
+      objectReference: {fileID: 0}
+    - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 5.245171
+      objectReference: {fileID: 0}
+    - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 26.218
+      objectReference: {fileID: 0}
+    - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.9
+      value: 31.1
       objectReference: {fileID: 0}
     - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.5
+      value: -1.2
       objectReference: {fileID: 0}
     - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 26.5
+      value: 19.53
       objectReference: {fileID: 0}
     - target: {fileID: 2447206537342892633, guid: b0b55cdf9bde420419a73c959281991f, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13432,6 +13465,10 @@ PrefabInstance:
     - target: {fileID: 3569876978152042226, guid: e4bb7ff4156c69b419afa0b58c64825a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8627898608494079165, guid: e4bb7ff4156c69b419afa0b58c64825a, type: 3}
+      propertyPath: m_TagString
+      value: MiraAgua
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

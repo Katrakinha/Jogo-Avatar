@@ -8,6 +8,7 @@ TagManager:
   - Agua
   - GanchoTeia
   - Chao
+  - MiraAgua
   layers:
   - Default
   - TransparentFX
