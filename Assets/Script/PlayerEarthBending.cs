@@ -14,19 +14,20 @@ public class PlayerEarthBending : MonoBehaviour
     [Header("Combate da Dobra")]
     public float danoDaTerra = 15f;
     public float forcaKnockbackTerra = 7f;
-    public LayerMask inimigoLayer; // NOVO: Atribua no Inspector a layer dos inimigos!
+    public LayerMask inimigoLayer;
 
     [Header("Input")]
     public InputActionReference controleAtaque;
-
-    [Header("Configurações da Queda")]
-    public float forcaQueda = 40f; 
 
     [Header("Efeitos Visuais e Som")]
     public UnityEvent onTremorDeTerra; 
     
     private bool isSlamming = false;
     private bool isWindingUp = false; 
+    
+    // --- NOVO: Variáveis para a trava de segurança temporal ---
+    private float failsafeTimer = 0f;
+    private float TEMPO_MAXIMO_QUEDA = 1.5f; // Se ele não tocar no chão em 1.5s, força o destravamento
 
     void OnEnable() { if (controleAtaque != null) controleAtaque.action.Enable(); }
     void OnDisable() { if (controleAtaque != null) controleAtaque.action.Disable(); }
@@ -43,9 +44,18 @@ public class PlayerEarthBending : MonoBehaviour
             IniciarDobraTerra();
         }
 
-        if (isSlamming && !isWindingUp && scriptMovimento.isGrounded)
+        if (isSlamming && !isWindingUp)
         {
-            AterrarDobraTerra();
+            failsafeTimer += Time.deltaTime;
+            
+            // O SEGREDO ESTÁ AQUI: Só checamos se ele "parou de cair" 
+            // depois de 0.15s, para dar tempo da velocidade absurda agir primeiro!
+            bool parouDeCair = failsafeTimer > 0.15f && Mathf.Abs(rb.linearVelocity.y) < 0.5f;
+
+            if (scriptMovimento.isGrounded || parouDeCair || failsafeTimer >= TEMPO_MAXIMO_QUEDA)
+            {
+                AterrarDobraTerra();
+            }
         }
 
         if (anim != null) 
@@ -66,7 +76,11 @@ public class PlayerEarthBending : MonoBehaviour
             else
             {
                 rb.useGravity = true;
-                rb.linearVelocity = new Vector3(0f, -forcaQueda, 0f);
+                
+                // Lê a força de queda direto do seu arquivo AvatarEarthData
+                float forcaDaQueda = earthData != null ? earthData.forcaQuedaJogador : 100f;
+                
+                rb.linearVelocity = new Vector3(0f, -forcaDaQueda, 0f);
             }
         }
     }
@@ -75,6 +89,7 @@ public class PlayerEarthBending : MonoBehaviour
     {
         isSlamming = true;
         isWindingUp = true;
+        failsafeTimer = 0f; // Zera o cronômetro
         if (scriptMovimento != null) scriptMovimento.isEarthSlamming = true; 
 
         if (anim != null) anim.SetTrigger("TerraSlam");
@@ -87,8 +102,14 @@ public class PlayerEarthBending : MonoBehaviour
 
     private void AterrarDobraTerra()
     {
+        // Se já aterrou, não executa duas vezes
+        if (!isSlamming) return;
+
         isSlamming = false;
         rb.useGravity = true;
+        
+        // Força a animação a ir para o chão se o Animator estiver perdido
+        if (anim != null) anim.SetBool("TerraIsGrounded", true);
     }
 
     public void PausarAnimacaoTerraEvent()
@@ -97,7 +118,6 @@ public class PlayerEarthBending : MonoBehaviour
         
         if (onTremorDeTerra != null) onTremorDeTerra.Invoke();
         
-        // --- ONDA DE CHOQUE (DANO) ---
         DispararDanoEmArea();
 
         StartCoroutine(RotinaOndasDeTerra());
@@ -107,7 +127,6 @@ public class PlayerEarthBending : MonoBehaviour
     {
         if (earthData == null) return;
 
-        // Cria a esfera de dano do tamanho do anel mais distante da dobra
         Collider[] inimigosAtingidos = Physics.OverlapSphere(transform.position, earthData.raioAnel3, inimigoLayer);
         
         foreach (Collider inimigo in inimigosAtingidos)

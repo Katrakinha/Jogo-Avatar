@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: EarthBender
   m_EditorClassIdentifier: Assembly-CSharp::AvatarEarthData
   rockPrefab: {fileID: 2586713759252572031, guid: 87123ac33e4f0f04bacc28c3d2dcb0f6, type: 3}
+  forcaQuedaJogador: 80
   qtdRochasAnel1: 6
   raioAnel1: 7
   atrasoAnel1: 0
