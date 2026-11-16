@@ -37,18 +37,17 @@ public class PlayerAnimator : MonoBehaviour
 
     void Update()
     {
-        // --- ANIMAÇÕES DE MOVIMENTO ---
         anim.SetFloat("Speed", movementSimulation.currentSpeed);
         anim.SetBool("NoChao", movementSimulation.isGrounded);
         anim.SetBool("IsGliding", movementSimulation.isGliding);
         anim.SetBool("IsAirScooter", movementSimulation.isAirScooter); 
         
-        if(movementSimulation.controlePular.action.WasPressedThisFrame() && movementSimulation.isGrounded)
+        if (movementSimulation.didJump)
         {
             anim.SetTrigger("Pulo");
         }
 
-        if(movementSimulation.didDoubleJump || movementSimulation.didMountAirScooter)
+        if (movementSimulation.didDoubleJump || movementSimulation.didMountAirScooter)
         {
             anim.SetTrigger("PuloDuplo");
             if (vfxRedemoinho != null && movementSimulation.didDoubleJump)
@@ -69,10 +68,13 @@ public class PlayerAnimator : MonoBehaviour
         }
     }
 
-    // --- NOVA FUNÇÃO PÚBLICA PARA O COMBATE ---
-    // Esta função será chamada diretamente pelo PlayerCombat
     public void DispararAnimacaoDeAtaque(int passoDoCombo)
     {
+        anim.ResetTrigger("Atk1");
+        anim.ResetTrigger("Atk2");
+        anim.ResetTrigger("Atk3");
+        anim.ResetTrigger("Atk4");
+
         if (passoDoCombo == 1) 
         {
             anim.SetTrigger("Atk1");

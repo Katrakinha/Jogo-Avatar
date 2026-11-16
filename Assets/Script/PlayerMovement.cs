@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     public float currentSpeed;
     public bool isGrounded;
     public int pulosRealizados = 0; 
+    public bool didJump = false;
     public bool didDoubleJump = false; 
     public bool didMountAirScooter = false; 
     public bool isGliding = false;
@@ -27,6 +28,12 @@ public class PlayerMovement : MonoBehaviour
     public bool isAiming = false; 
     public bool isEarthSlamming = false; 
     public bool isAttacking = false;
+
+    public IdentidadePersonagem identidade;
+
+    [HideInInspector] public bool inputFakeAtivo = false;
+    [HideInInspector] public Vector3 direcaoMovimentoIA = Vector3.zero;
+    [HideInInspector] public bool inputFakePulo = false;
 
     [Header("Controles (Novo Input System)")]
     public InputActionReference controleMover;
@@ -48,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (identidade == null) identidade = GetComponent<IdentidadePersonagem>();
         if (objetoPlanador != null) objetoPlanador.SetActive(false);
         if (objetoAirScooter != null) objetoAirScooter.SetActive(false);
     }
@@ -78,64 +86,86 @@ public class PlayerMovement : MonoBehaviour
     {
         if (tempoCegoPulo > 0) tempoCegoPulo -= Time.deltaTime;
 
+        didJump = false;
         didMountAirScooter = false; 
         didDoubleJump = false; 
 
-        Vector2 inputDir = Vector2.zero;
-        if (controleMover != null) inputDir = controleMover.action.ReadValue<Vector2>();
-        
-        float moveX = inputDir.x;
-        float moveZ = inputDir.y;
-        
-        Vector3 camForward = Camera.main.transform.forward;
-        Vector3 camRight = Camera.main.transform.right;
-        camForward.y = 0f;
-        camRight.y = 0f;
+        if (identidade == null || identidade.isPlayerControlled)
+        {
+            Vector2 inputDir = Vector2.zero;
+            if (controleMover != null) inputDir = controleMover.action.ReadValue<Vector2>();
 
-        moveInput = (camForward.normalized * moveZ + camRight.normalized * moveX).normalized;
+            float moveX = inputDir.x;
+            float moveZ = inputDir.y;
+
+            Vector3 camForward = Camera.main.transform.forward;
+            Vector3 camRight = Camera.main.transform.right;
+            camForward.y = 0f;
+            camRight.y = 0f;
+
+            moveInput = (camForward.normalized * moveZ + camRight.normalized * moveX);
+            if (moveInput.sqrMagnitude > 1f) moveInput.Normalize();
+        }
+        else if (inputFakeAtivo)
+        {
+            moveInput = Vector3.ClampMagnitude(direcaoMovimentoIA, 1f);
+        }
+        else
+        {
+            moveInput = Vector3.zero;
+        }
         
         float targetSpeedCalc = isAiming ? (data.moveSpeed * 0.4f) : data.moveSpeed;
         currentSpeed = moveInput.magnitude * targetSpeedCalc;
 
         CheckGrounded();
 
-        if (!isAiming && !isEarthSlamming)
+        if (!isAiming && !isEarthSlamming && (identidade == null || identidade.isPlayerControlled || inputFakeAtivo))
         {
-            if (controleCancelarPlanador != null && controleCancelarPlanador.action.WasPressedThisFrame())
+            if (identidade == null || identidade.isPlayerControlled)
             {
-                if (isGliding) PararPlanar();
-            }
-
-            if (controleAirScooter != null && controleAirScooter.action.WasPressedThisFrame())
-            {
-                if (!isGliding)
+                if (data.podePlanar && controleCancelarPlanador != null && controleCancelarPlanador.action.WasPressedThisFrame())
                 {
-                    if (isAirScooter || isMountingAirScooter) 
+                    if (isGliding) PararPlanar();
+                }
+
+                if (data.podeAirScooter && controleAirScooter != null && controleAirScooter.action.WasPressedThisFrame())
+                {
+                    if (!isGliding)
                     {
-                        DesmontarAirScooterComPulinho();
+                        if (isAirScooter || isMountingAirScooter) 
+                            DesmontarAirScooterComPulinho();
+                        else if (isGrounded) 
+                            AtivarAirScooter();
                     }
-                    else if (isGrounded) 
-                    {
-                        AtivarAirScooter();
-                    }
+                }
+
+                if (data.podePlanar && isGliding && controleSopro != null && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
+                {
+                    soprosUsados++;
+                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+                    rb.AddForce(Vector3.up * data.boostSoproForce, ForceMode.Impulse);
+                    didSopro = true; 
+                    efeitoInclinacaoSopro = -50f; 
                 }
             }
 
-            if (isGliding && controleSopro != null && controleSopro.action.WasPressedThisFrame() && soprosUsados < data.maxSopros)
+            bool apertouPulo = false;
+            if (identidade == null || identidade.isPlayerControlled)
             {
-                soprosUsados++;
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-                rb.AddForce(Vector3.up * data.boostSoproForce, ForceMode.Impulse);
-                didSopro = true; 
-                efeitoInclinacaoSopro = -50f; 
+                if (controlePular != null && controlePular.action.WasPressedThisFrame()) apertouPulo = true;
             }
+            if (inputFakePulo) apertouPulo = true; 
 
-            if (controlePular != null && controlePular.action.WasPressedThisFrame())
+            if (apertouPulo)
             {
+                inputFakePulo = false;
+                
                 if (pulosRealizados == 0 && isGrounded) 
                 {
                     pulosRealizados = 1;
                     tempoCegoPulo = 0.15f; 
+                    didJump = true;
                     
                     PararPlanar();
                     if (isAirScooter || isMountingAirScooter) DesativarAirScooterSilencioso();
@@ -143,12 +173,12 @@ public class PlayerMovement : MonoBehaviour
                     rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); 
                     rb.AddForce(Vector3.up * data.jumpForce, ForceMode.Impulse);
                 }
-                else if (pulosRealizados == 1 || isAirScooter) 
+                else if (data.podePuloDuplo && (pulosRealizados == 1 || isAirScooter)) 
                 {
                     pulosRealizados = 2; 
                     ExecutarPuloDuploComEfeito();
                 }
-                else if (pulosRealizados >= 2 && !isGliding) 
+                else if (data.podePlanar && pulosRealizados >= 2 && !isGliding) 
                 {
                     AtivarPlanador();
                 }
@@ -173,7 +203,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (moveInput != Vector3.zero && !isAiming)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(moveInput);
+                Quaternion targetRotation = Quaternion.LookRotation(moveInput.normalized);
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 15f * Time.fixedDeltaTime));
             }
             return; 
@@ -182,7 +212,7 @@ public class PlayerMovement : MonoBehaviour
         if (isGliding)
         {
             Vector2 inputDir = controleMover != null ? controleMover.action.ReadValue<Vector2>() : Vector2.zero;
-            Vector3 direcaoVoo = moveInput != Vector3.zero ? moveInput : transform.forward;
+            Vector3 direcaoVoo = moveInput.sqrMagnitude > 0.001f ? moveInput.normalized : transform.forward;
             
             float currentGlideSpeed = data.baseGlideForwardSpeed + (inputDir.y * 5f);
             currentGlideSpeed = Mathf.Max(currentGlideSpeed, 3f); 
@@ -216,7 +246,7 @@ public class PlayerMovement : MonoBehaviour
         else if (isAirScooter)
         {
             Vector2 inputDir = controleMover != null ? controleMover.action.ReadValue<Vector2>() : Vector2.zero;
-            Vector3 direcaoScooter = moveInput != Vector3.zero ? moveInput : transform.forward;
+            Vector3 direcaoScooter = moveInput.sqrMagnitude > 0.001f ? moveInput.normalized : transform.forward;
 
             if (isGrounded) 
             {
@@ -256,10 +286,10 @@ public class PlayerMovement : MonoBehaviour
 
             if (!isAiming) 
             {
-                if (moveInput != Vector3.zero)
+                if (moveInput.sqrMagnitude > 0.005f)
                 {
-                    Quaternion targetRotation = Quaternion.LookRotation(moveInput);
-                    rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 10f * Time.fixedDeltaTime));
+                    Quaternion targetRotation = Quaternion.LookRotation(moveInput.normalized);
+                    rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, 12f * Time.fixedDeltaTime));
                 }
             }
         }
@@ -324,24 +354,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 boxSize = new Vector3(data.boxWidth, data.boxHeight, data.boxLength);
             Vector3 boxCenter = groundCheck.position + groundCheck.TransformDirection(data.boxOffset);
-            
-            // --- O RADAR DE DEBUG ABSOLUTO ---
-            Collider[] hits = Physics.OverlapBox(boxCenter, boxSize / 2f, groundCheck.rotation);
-            if (hits.Length > 0)
-            {
-                foreach(Collider hit in hits)
-                {
-                    if (hit.gameObject != this.gameObject) // Ignora o próprio Aang
-                    {
-                        Debug.Log("+++ RADAR DA CAIXA BATEU EM: [" + hit.gameObject.name + "] | Layer lida pela Unity: [" + LayerMask.LayerToName(hit.gameObject.layer) + "]");
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log("--- RADAR VAZIO! A CAIXA VERMELHA NAO ENCOSTOU EM NENHUM COLLIDER!");
-            }
-            // ----------------------------------
 
             isGrounded = Physics.CheckBox(boxCenter, boxSize / 2f, groundCheck.rotation, groundLayer);
             
@@ -355,25 +367,6 @@ public class PlayerMovement : MonoBehaviour
                 pulosRealizados = 0; 
                 PararPlanar();
             }
-
-            Debug.Log("Resultado final (isGrounded): " + isGrounded);
-        }
-    }
-
-    void OnDrawGizmos()
-    {
-        if (groundCheck != null && data != null)
-        {
-            Vector3 boxSize = new Vector3(data.boxWidth, data.boxHeight, data.boxLength);
-            Vector3 boxCenter = groundCheck.position + groundCheck.TransformDirection(data.boxOffset);
-            
-            Gizmos.color = Color.red;
-            Gizmos.matrix = Matrix4x4.TRS(boxCenter, groundCheck.rotation, Vector3.one);
-            Gizmos.DrawWireCube(Vector3.zero, boxSize);
-
-            Gizmos.matrix = Matrix4x4.identity; 
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(boxCenter, boxCenter + Vector3.down * 1.2f);
         }
     }
 }

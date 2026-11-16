@@ -27,4 +27,9 @@ public class AvatarMovementData : ScriptableObject
     [Header("Configurações do Patinete Aéreo")]
     public float airScooterSpeed = 9f;  
     public float mountJumpForce = 5f;   
+
+    [Header("Habilidades Especiais")]
+    public bool podePuloDuplo = true;
+    public bool podePlanar = true;
+    public bool podeAirScooter = true;
 }

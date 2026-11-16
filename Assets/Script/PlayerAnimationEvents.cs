@@ -3,9 +3,16 @@ using UnityEngine;
 public class PlayerAnimationEvents : MonoBehaviour
 {
     [Header("Ligação com o Cérebro")]
-    public PlayerCombat scriptCombate; // Arrasta o objeto principal do Aang para aqui
+    public PlayerCombat scriptCombate;
 
-    // O Animator chama estas funções, e a Ponte passa a mensagem ao PlayerCombat
+    void Awake()
+    {
+        if (scriptCombate == null)
+        {
+            scriptCombate = GetComponentInParent<PlayerCombat>();
+        }
+    }
+
     public void AnimEvent_LigarHitbox()
     {
         if (scriptCombate != null) scriptCombate.AnimEvent_LigarHitbox();
@@ -21,11 +28,28 @@ public class PlayerAnimationEvents : MonoBehaviour
         if (scriptCombate != null) scriptCombate.AnimEvent_FimDoAtaque();
     }
 
-    // ==========================================
-    // NOVO: A PONTE PARA O IMPULSO FÍSICO!
-    // ==========================================
     public void AnimEvent_ImpulsoAtaque()
     {
         if (scriptCombate != null) scriptCombate.AnimEvent_ImpulsoAtaque();
+    }
+
+    public void AnimEvent_LigarAguaDireita()
+    {
+        if (scriptCombate != null) scriptCombate.AnimEvent_LigarAguaDireita();
+    }
+
+    public void AnimEvent_LigarAguaEsquerda()
+    {
+        if (scriptCombate != null) scriptCombate.AnimEvent_LigarAguaEsquerda();
+    }
+
+    public void AnimEvent_CriarBolaAgua()
+    {
+        if (scriptCombate != null) scriptCombate.AnimEvent_CriarBolaAgua();
+    }
+
+    public void AnimEvent_EstourarBolaAgua()
+    {
+        if (scriptCombate != null) scriptCombate.AnimEvent_EstourarBolaAgua();
     }
 }
